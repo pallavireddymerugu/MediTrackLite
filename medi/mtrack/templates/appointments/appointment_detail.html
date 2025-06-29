@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}Appointment Details - MediTrack Lite{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4>Appointment Details</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Patient:</strong> {{ appointment.patient.get_full_name }}</p>
+                        <p><strong>Doctor:</strong> 
+                            {% if appointment.doctor %}
+                                {{ appointment.doctor.get_full_name }}
+                            {% elif appointment.preferred_doctor %}
+                                {{ appointment.preferred_doctor.get_full_name }} (Preferred)
+                            {% else %}
+                                Not assigned
+                            {% endif %}
+                        </p>
+                        <p><strong>Date:</strong> {{ appointment.appointment_date }}</p>
+                        <p><strong>Time:</strong> {{ appointment.appointment_time }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Status:</strong> 
+                            <span class="badge badge-{% if appointment.status == 'completed' %}success{% elif appointment.status == 'confirmed' %}info{% elif appointment.status == 'in_progress' %}warning{% else %}secondary{% endif %}">
+                                {{ appointment.get_status_display }}
+                            </span>
+                        </p>
+                        <p><strong>Booked on:</strong> {{ appointment.created_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <p><strong>Health Concern:</strong></p>
+                    <p class="border p-2 bg-light">{{ appointment.health_concern }}</p>
+                </div>
+                
+                <!-- Accept appointment button for pending appointments -->
+                {% if user.is_doctor and appointment.status == 'pending' %}
+                    {% if appointment.doctor == user or appointment.preferred_doctor == user %}
+                        <div class="mt-3">
+                            <a href="{% url 'appointments:accept_appointment' appointment.id %}" class="btn btn-success">Accept Appointment</a>
+                        </div>
+                    {% elif not appointment.doctor %}
+                        <div class="mt-3">
+                            <span class="text-muted">This appointment is assigned to: {{ appointment.preferred_doctor.get_full_name|default:"Another doctor" }}</span>
+                        </div>
+                    {% endif %}
+                {% endif %}
+                
+                <!-- Status update for assigned doctor -->
+                {% if user.is_doctor and appointment.doctor == user %}
+                <div class="mt-3">
+                    <h5>Update Status</h5>
+                    <form method="post" action="{% url 'appointments:update_status' appointment.id %}" class="d-inline">
+                        {% csrf_token %}
+                        {% if appointment.status == 'confirmed' %}
+                            <button type="submit" name="status" value="in_progress" class="btn btn-warning btn-sm">Mark In Progress</button>
+                        {% elif appointment.status == 'in_progress' %}
+                            <button type="submit" name="status" value="completed" class="btn btn-success btn-sm">Mark Completed</button>
+                        {% endif %}
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if prescription %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5>Prescription</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Medicines:</strong></p>
+                <p class="border p-2 bg-light">{{ prescription.medicine_names }}</p>
+                
+                <p><strong>Dosage Instructions:</strong></p>
+                <p class="border p-2 bg-light">{{ prescription.dosage_instructions }}</p>
+                
+                <p><strong>Frequency:</strong></p>
+                <p class="border p-2 bg-light">{{ prescription.frequency }}</p>
+                
+                <small class="text-muted">Prescribed on: {{ prescription.created_at|date:"M d, Y H:i" }}</small>
+            </div>
+        </div>
+        {% elif user.is_doctor and appointment.doctor == user and appointment.status == 'completed' %}
+        <div class="card mt-3">
+            <div class="card-body text-center">
+                <p>No prescription added yet.</p>
+                <a href="{% url 'appointments:add_prescription' appointment.id %}" class="btn btn-primary">Add Prescription</a>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if feedback %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5>Patient Feedback</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Rating:</strong> {{ feedback.rating }}/5 
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= feedback.rating %}
+                            <span class="text-warning">★</span>
+                        {% else %}
+                            <span class="text-muted">☆</span>
+                        {% endif %}
+                    {% endfor %}
+                </p>
+                
+                {% if feedback.comment %}
+                <p><strong>Comment:</strong></p>
+                <p class="border p-2 bg-light">{{ feedback.comment }}</p>
+                {% endif %}
+                
+                <small class="text-muted">Submitted on: {{ feedback.created_at|date:"M d, Y H:i" }}</small>
+            </div>
+        </div>
+        {% elif user.is_patient and appointment.patient == user and appointment.status == 'completed' %}
+        <div class="card mt-3">
+            <div class="card-body text-center">
+                <p>Share your experience with the doctor.</p>
+                <a href="{% url 'appointments:submit_feedback' appointment.id %}" class="btn btn-primary">Submit Feedback</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                {% if user.is_patient %}
+                    <a href="{% url 'appointments:appointments_list' %}" class="btn btn-outline-primary btn-block">Back to My Appointments</a>
+                    {% if appointment.status == 'completed' and not feedback %}
+                        <a href="{% url 'appointments:submit_feedback' appointment.id %}" class="btn btn-primary btn-block mt-2">Submit Feedback</a>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'appointments:my_appointments' %}" class="btn btn-outline-primary btn-block">Back to My Appointments</a>
+                    {% if appointment.status == 'completed' and not prescription and appointment.doctor == user %}
+                        <a href="{% url 'appointments:add_prescription' appointment.id %}" class="btn btn-primary btn-block mt-2">Add Prescription</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Debug information (remove this in production) -->
+{% comment %}
+<div class="alert alert-info mt-3">
+    <h6>Debug Info:</h6>
+    <p>Appointment ID: {{ appointment.id }}</p>
+    <p>Patient: {{ appointment.patient.get_full_name }}</p>
+    <p>Doctor: {{ appointment.doctor.get_full_name|default:"None" }}</p>
+    <p>Preferred Doctor: {{ appointment.preferred_doctor.get_full_name|default:"None" }}</p>
+    <p>Status: {{ appointment.status }}</p>
+    <p>Current User: {{ user.get_full_name }} ({{ user.role }})</p>
+</div>
+{% endcomment %}
+{% endblock %}

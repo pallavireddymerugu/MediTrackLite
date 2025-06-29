@@ -1,0 +1,260 @@
+<!-- templates/authentication/dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4>
+                    <i class="fas fa-tachometer-alt"></i>
+                    Welcome to Your Dashboard, {{ user.username }}!
+                </h4>
+            </div>
+            <div class="card-body">
+                <!-- User Information Section -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-user"></i>
+                                    User Information
+                                </h5>
+                                <p><strong>Username:</strong> {{ user.username }}</p>
+                                <p><strong>Email:</strong> {{ user.email }}</p>
+                                <p><strong>Role:</strong> 
+                                    <span class="badge {% if user.is_patient %}bg-success{% elif user.is_doctor %}bg-info{% else %}bg-secondary{% endif %}">
+                                        {{ user.get_role_display }}
+                                    </span>
+                                </p>
+                                <p><strong>Account Status:</strong> 
+                                    <span class="badge bg-success">Active</span>
+                                </p>
+                                <p><strong>Last Login:</strong> {{ user.last_login|date:"M d, Y H:i" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-chart-line"></i>
+                                    Quick Stats
+                                </h5>
+                                <p><strong>Member Since:</strong> {{ user.date_joined|date:"M d, Y" }}</p>
+                                <p><strong>Profile Completion:</strong> 
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 85%">85%</div>
+                                    </div>
+                                </p>
+                                <p><strong>Security Level:</strong> 
+                                    <span class="badge bg-warning">Good</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Role-Specific Actions -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <h5 class="mb-3">
+                            <i class="fas fa-cogs"></i>
+                            Available Actions
+                        </h5>
+                        
+                        {% if user.is_patient %}
+                            <!-- Patient-Specific Actions -->
+                            <div class="alert alert-success" role="alert">
+                                <h6><i class="fas fa-user-injured"></i> Patient Portal</h6>
+                                <p>Welcome to your patient dashboard. You have access to patient-specific features.</p>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-notes-medical fa-3x text-primary mb-3"></i>
+                                            <h6>Medical Records</h6>
+                                            <p class="small">View your medical history and records</p>
+                                            <a href="{% url 'patient_only' %}" class="btn btn-primary btn-sm">Access</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-calendar-alt fa-3x text-success mb-3"></i>
+                                            <h6>Appointments</h6>
+                                            <p class="small">Schedule and manage appointments</p>
+                                            <button class="btn btn-success btn-sm">Schedule</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-pills fa-3x text-info mb-3"></i>
+                                            <h6>Prescriptions</h6>
+                                            <p class="small">View prescription history</p>
+                                            <button class="btn btn-info btn-sm">View</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Access Restriction Demo -->
+                            <div class="alert alert-warning" role="alert">
+                                <h6><i class="fas fa-exclamation-triangle"></i> Access Restrictions</h6>
+                                <p>As a patient, you cannot access doctor-only areas:</p>
+                                <button class="btn btn-outline-danger btn-sm" onclick="showAccessDenied()">
+                                    Try Doctor Area (Will be denied)
+                                </button>
+                            </div>
+                            
+                        {% elif user.is_doctor %}
+                            <!-- Doctor-Specific Actions -->
+                            <div class="alert alert-info" role="alert">
+                                <h6><i class="fas fa-user-md"></i> Doctor Portal</h6>
+                                <p>Welcome to your doctor dashboard. You have access to doctor-specific features.</p>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                                            <h6>Patient Management</h6>
+                                            <p class="small">Manage patient records and care</p>
+                                            <a href="{% url 'doctor_only' %}" class="btn btn-primary btn-sm">Access</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-prescription fa-3x text-success mb-3"></i>
+                                            <h6>Prescriptions</h6>
+                                            <p class="small">Create and manage prescriptions</p>
+                                            <button class="btn btn-success btn-sm">Manage</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-chart-bar fa-3x text-info mb-3"></i>
+                                            <h6>Reports</h6>
+                                            <p class="small">Generate clinical reports</p>
+                                            <button class="btn btn-info btn-sm">Generate</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Access Restriction Demo -->
+                            <div class="alert alert-warning" role="alert">
+                                <h6><i class="fas fa-exclamation-triangle"></i> Access Restrictions</h6>
+                                <p>As a doctor, you cannot access patient-only areas:</p>
+                                <button class="btn btn-outline-danger btn-sm" onclick="showAccessDenied()">
+                                    Try Patient Area (Will be denied)
+                                </button>
+                            </div>
+                            
+                        {% else %}
+                            <!-- Fallback for users with undefined roles -->
+                            <div class="alert alert-secondary" role="alert">
+                                <h6><i class="fas fa-question-circle"></i> Role Not Defined</h6>
+                                <p>Your user role is not properly configured. Please contact an administrator.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Recent Activity Section -->
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6><i class="fas fa-history"></i> Recent Activity</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="list-group list-group-flush">
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="fas fa-sign-in-alt text-success"></i>
+                                            <span class="ms-2">Logged in successfully</span>
+                                        </div>
+                                        <small class="text-muted">Just now</small>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="fas fa-user-edit text-info"></i>
+                                            <span class="ms-2">Profile viewed</span>
+                                        </div>
+                                        <small class="text-muted">2 minutes ago</small>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="fas fa-shield-alt text-warning"></i>
+                                            <span class="ms-2">Security check completed</span>
+                                        </div>
+                                        <small class="text-muted">1 hour ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Links Section -->
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6><i class="fas fa-link"></i> Quick Links</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'home' %}" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-home"></i> Home
+                                    </a>
+                                    {% if user.is_patient %}
+                                        <a href="{% url 'patient_only' %}" class="btn btn-outline-success btn-sm">
+                                            <i class="fas fa-user-injured"></i> Patient Area
+                                        </a>
+                                    {% elif user.is_doctor %}
+                                        <a href="{% url 'doctor_only' %}" class="btn btn-outline-info btn-sm">
+                                            <i class="fas fa-user-md"></i> Doctor Area
+                                        </a>
+                                    {% endif %}
+                                    <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm">
+                                        <i class="fas fa-sign-out-alt"></i> Logout
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showAccessDenied() {
+    alert('Access Denied! You do not have permission to access this area.');
+}
+</script>
+
+<!-- Add Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}

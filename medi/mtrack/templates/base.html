@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MediTrack Lite{% endblock %}</title>
+    {% load bootstrap4 %}
+    {% bootstrap_css %}
+    {% load static %}
+    <link href="{% load static %}{% static 'cssfiles/style.css' %}" rel="stylesheet">
+</head>
+<body style="background-image: url('{% static 'images/doctor.png' %}'); background-size: cover; background-repeat: no-repeat; background-position: center; background-attachment: fixed;">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'accounts:dashboard' %}">MediTrack Lite</a>
+            
+            {% if user.is_authenticated %}
+            <div class="navbar-nav ml-auto">
+                <a class="nav-link" href="{% url 'accounts:dashboard' %}">Dashboard</a>
+                
+                {% if user.is_patient %}
+                    <a class="nav-link" href="{% url 'appointments:book_appointment' %}">Book Appointment</a>
+                    <a class="nav-link" href="{% url 'appointments:appointments_list' %}">My Appointments</a>
+                {% elif user.is_doctor %}
+                    <a class="nav-link" href="{% url 'appointments:appointments_list' %}">Pending Appointments</a>
+                    <a class="nav-link" href="{% url 'appointments:my_appointments' %}">My Appointments</a>
+                {% endif %}
+                
+                <a class="nav-link" href="{% url 'accounts:logout' %}">Logout ({{ user.get_full_name }})</a>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% bootstrap_messages %}
+        
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    {% bootstrap_jquery %}
+    {% bootstrap_javascript %}
+</body>
+</html>

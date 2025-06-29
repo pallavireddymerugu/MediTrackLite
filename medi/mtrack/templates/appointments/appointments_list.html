@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Appointments - MediTrack Lite{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3>
+                {% if user.is_patient %}
+                    My Appointments
+                {% else %}
+                    Pending Appointments
+                {% endif %}
+            </h3>
+            {% if user.is_patient %}
+                <a href="{% url 'appointments:book_appointment' %}" class="btn btn-primary">Book New Appointment</a>
+            {% endif %}
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        {% if user.is_patient %}
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Doctor</th>
+                            <th>Health Concern</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        {% else %}
+                            <th>Patient</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Health Concern</th>
+                            <th>Preferred Doctor</th>
+                            <th>Actions</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appointment in appointments %}                     
+                        <tr>                         
+                            {% if user.is_patient %}                             
+                                <td>{{ appointment.appointment_date }}</td>                             
+                                <td>{{ appointment.appointment_time }}</td>                             
+                                <td>{{ appointment.doctor.get_full_name|default:"Not assigned" }}</td>                             
+                                <td>{{ appointment.health_concern|truncatechars:50 }}</td>                             
+                                <td>                                 
+                                    <span class="badge badge-{% if appointment.status == 'completed' %}success{% elif appointment.status == 'confirmed' %}info{% elif appointment.status == 'in_progress' %}warning{% else %}secondary{% endif %}">                                     
+                                        {{ appointment.get_status_display }}                                 
+                                    </span>                             
+                                </td>                             
+                                <td>                                 
+                                    <a href="{% url 'appointments:appointment_detail' appointment.id %}" class="btn btn-sm btn-outline-primary">View Details</a>                             
+                                </td>                         
+                            {% else %}                             
+                                <td>{{ appointment.patient.get_full_name }}</td>                             
+                                <td>{{ appointment.appointment_date }}</td>                             
+                                <td>{{ appointment.appointment_time }}</td>                             
+                                <td>{{ appointment.health_concern|truncatechars:50 }}</td>                             
+                                <td>{{ appointment.preferred_doctor.get_full_name|default:"Any doctor" }}</td>                             
+                                <td>
+                                    {% if appointment.status == 'pending' %}
+                                        {% if appointment.doctor == user or appointment.preferred_doctor == user %}
+                                            <!-- Show accept button only for assigned/preferred doctor -->
+                                            <a href="{% url 'appointments:accept_appointment' appointment.id %}" class="btn btn-sm btn-primary">Accept</a>
+                                        {% else %}
+                                            <!-- Show message for other doctors -->
+                                            <span class="text-muted small">Assigned to: {{ appointment.doctor.get_full_name|default:appointment.preferred_doctor.get_full_name }}</span>
+                                        {% endif %}
+                                    {% endif %}
+                                    <a href="{% url 'appointments:appointment_detail' appointment.id %}" class="btn btn-sm btn-outline-secondary">View</a>                             
+                                </td>                         
+                            {% endif %}                     
+                        </tr>                     
+                    {% empty %}                     
+                        <tr>                         
+                            <td colspan="6" class="text-center">No appointments found.</td>                     
+                        </tr>                     
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

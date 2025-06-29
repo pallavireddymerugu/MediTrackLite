@@ -1,0 +1,28 @@
+<!-- templates/authentication/doctor_only.html -->
+{% extends 'base.html' %}
+
+{% block title %}Doctor Area{% endblock %}
+
+{% block content %}
+<div class="alert alert-success">
+    <h4>👩‍⚕️ Doctor-Only Area</h4>
+    <p>This page is only accessible to users with Doctor role.</p>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5>Doctor Services</h5>
+    </div>
+    <div class="card-body">
+        <ul>
+            <li>Patient Management</li>
+            <li>Medical Records Access</li>
+            <li>Prescription Management</li>
+            <li>Appointment Scheduling</li>
+            <li>Clinical Reports</li>
+        </ul>
+        
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}Submit Feedback - MediTrack Lite{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4>Submit Feedback</h4>
+                <p class="mb-0 text-muted">Doctor: {{ appointment.doctor.get_full_name }}</p>
+                <p class="mb-0 text-muted">Appointment: {{ appointment.appointment_date }} {{ appointment.appointment_time }}</p>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {% bootstrap_form form %}
+                    <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                    <a href="{% url 'appointments:appointment_detail' appointment.id %}" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

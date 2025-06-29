@@ -1,0 +1,22 @@
+<!-- templates/authentication/home.html -->
+{% extends 'base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="jumbotron">
+    <h1 class="display-4">Welcome to MediTrack</h1>
+    <p class="lead">Secure role-based authentication system for healthcare professionals and patients.</p>
+    
+    {% if not user.is_authenticated %}
+        <div class="mt-4">
+            <a class="btn btn-primary btn-lg me-3" href="{% url 'register' %}">Register</a>
+            <a class="btn btn-outline-primary btn-lg" href="{% url 'login' %}">Login</a>
+        </div>
+    {% else %}
+        <div class="mt-4">
+            <a class="btn btn-success btn-lg" href="{% url 'dashboard' %}">Go to Dashboard</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

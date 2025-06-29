@@ -1,0 +1,27 @@
+<!-- templates/authentication/patient_only.html -->
+{% extends 'base.html' %}
+
+{% block title %}Patient Area{% endblock %}
+
+{% block content %}
+<div class="alert alert-info">
+    <h4>🏥 Patient-Only Area</h4>
+    <p>This page is only accessible to users with Patient role.</p>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5>Patient Services</h5>
+    </div>
+    <div class="card-body">
+        <ul>
+            <li>View Medical Records</li>
+            <li>Schedule Appointments</li>
+            <li>View Test Results</li>
+            <li>Contact Healthcare Providers</li>
+        </ul>
+        
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}
